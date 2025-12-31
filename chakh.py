@@ -14,18 +14,22 @@ from telegram.ext import (
     ContextTypes,
 )
 
-# --- إعدادات الاتصال السحابي (بياناتك الخاصة) ---
+# --- إعدادات الأمان ---
 BOT_TOKEN = "7259081589:AAFLxrqldS6XyhrMwoDAHM9GIR1nZWZ9SFc"
-# الرابط مدمج مع كلمة المرور التي زودتني بها
-DATABASE_URL = "postgresql://postgres:ha72$th!bU@cXUd@db.wwxsgddxilprofweergb.supabase.co:5432/postgres"
-
 OWNER_ID = 6018370288  
 SUPER_ADMIN_ID = 7289362045  
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+# دالة الاتصال المحسنة لتجاوز مشكلة رموز كلمة المرور
 def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
+    return psycopg2.connect(
+        host="db.wwxsgddxilprofweergb.supabase.co",
+        database="postgres",
+        user="postgres",
+        password="ha72$th!bU@cXUd",
+        port="5432"
+    )
 
 def init_db():
     conn = get_db_connection()
@@ -82,8 +86,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(node[0], reply_markup=get_reply_keyboard(1), parse_mode=ParseMode.HTML)
     if is_admin(uid):
         total_users = db_query("SELECT COUNT(*) FROM users", fetchone=True)[0]
-        daily_users = db_query("SELECT COUNT(*) FROM users WHERE join_date=%s", (today,), fetchone=True)[0]
-        txt = f"🔧 <b>لوحة الإدارة السحابية</b>\n👤 المشتركين: {total_users}\n📅 جدد اليوم: {daily_users}"
+        txt = f"🔧 <b>لوحة الإدارة السحابية</b>\n👤 المشتركين: {total_users}"
         kb = [[InlineKeyboardButton("🛠 إدارة الأقسام", callback_data="manage_1")],
               [InlineKeyboardButton("📢 إذاعة للكل", callback_data="p_bc")]]
         if uid in [OWNER_ID, SUPER_ADMIN_ID]:
